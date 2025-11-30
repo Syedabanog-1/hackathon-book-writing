@@ -1,0 +1,362 @@
+openapi: 3.0.0
+info:
+  title: Physical AI & Humanoid Robotics Textbook API
+  version: 1.0.0
+  description: API for managing textbook content, user authentication, personalization, RAG chatbot, and translation.
+
+servers:
+  - url: https://api.textbook.example.com
+    description: Production server
+  - url: http://localhost:8000
+    description: Local development server
+
+paths:
+  /auth/signup:
+    post:
+      summary: Register a new user
+      operationId: signupUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignupRequest'
+      responses:
+        '200':
+          description: User successfully registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: Invalid input
+        '409':
+          description: User already exists
+
+  /auth/signin:
+    post:
+      summary: Authenticate an existing user
+      operationId: signinUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SigninRequest'
+      responses:
+        '200':
+          description: User successfully authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Invalid credentials
+
+  /users/{user_id}/profile:
+    get:
+      summary: Get user personalization profile
+      operationId: getUserProfile
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User profile retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonalizationProfile'
+        '404':
+          description: User not found
+    put:
+      summary: Update user personalization profile
+      operationId: updateUserProfile
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PersonalizationProfileUpdate'
+      responses:
+        '200':
+          description: User profile updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonalizationProfile'
+        '404':
+          description: User not found
+
+  /users/{user_id}/skill-assessments:
+    post:
+      summary: Submit skill assessment responses for a user
+      operationId: submitSkillAssessments
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/SkillAssessmentResponseInput'
+      responses:
+        '200':
+          description: Skill assessments submitted
+        '404':
+          description: User not found
+
+  /rag/query:
+    post:
+      summary: Query the RAG chatbot
+      operationId: queryRAGChatbot
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RAGQueryRequest'
+      responses:
+        '200':
+          description: RAG chatbot response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RAGQueryResponse'
+        '500':
+          description: Internal server error
+
+  /chapters/{chapter_id}/personalize:
+    post:
+      summary: Request personalization for a specific chapter
+      operationId: personalizeChapter
+      parameters:
+        - name: chapter_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PersonalizationRequest'
+      responses:
+        '200':
+          description: Chapter personalization initiated/returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonalizedContent'
+        '404':
+          description: Chapter or user profile not found
+
+  /chapters/{chapter_id}/translate/urdu:
+    post:
+      summary: Request Urdu translation for a specific chapter
+      operationId: translateChapterToUrdu
+      parameters:
+        - name: chapter_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Chapter translation initiated/returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TranslatedContent'
+        '404':
+          description: Chapter not found
+        '500':
+          description: Translation service error
+
+  /ingest/content:
+    post:
+      summary: Ingest textbook content into RAG system
+      operationId: ingestContent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IngestionRequest'
+      responses:
+        '202':
+          description: Content ingestion accepted for processing
+        '400':
+          description: Invalid content format
+
+components:
+  schemas:
+    SignupRequest:
+      type: object
+      required:
+        - username
+        - email
+        - password
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+
+    SigninRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+
+    AuthResponse:
+      type: object
+      properties:
+        user_id:
+          type: string
+        access_token:
+          type: string
+        token_type:
+          type: string
+
+    PersonalizationProfile:
+      type: object
+      properties:
+        user_id:
+          type: string
+        difficulty_level:
+          type: string
+          enum: ['beginner', 'intermediate', 'advanced']
+        preferred_topics:
+          type: array
+          items:
+            type: string
+        custom_recommendations:
+          type: object
+
+    PersonalizationProfileUpdate:
+      type: object
+      properties:
+        difficulty_level:
+          type: string
+          enum: ['beginner', 'intermediate', 'advanced']
+        preferred_topics:
+          type: array
+          items:
+            type: string
+        custom_recommendations:
+          type: object
+
+    SkillAssessmentResponseInput:
+      type: object
+      required:
+        - question_id
+        - answer_text
+      properties:
+        question_id:
+          type: string
+        answer_text:
+          type: string
+
+    RAGQueryRequest:
+      type: object
+      required:
+        - query
+      properties:
+        query:
+          type: string
+        context_text:
+          type: string
+          description: Optional user-selected text for contextual RAG query
+
+    RAGQueryResponse:
+      type: object
+      properties:
+        answer:
+          type: string
+        source_documents:
+          type: array
+          items:
+            type: object
+            properties:
+              title:
+                type: string
+              section:
+                type: string
+              content_snippet:
+                type: string
+
+    PersonalizationRequest:
+      type: object
+      required:
+        - user_id
+      properties:
+        user_id:
+          type: string
+        target_difficulty:
+          type: string
+          enum: ['beginner', 'intermediate', 'advanced']
+          description: Optional, if user explicitly requests a difficulty level
+
+    PersonalizedContent:
+      type: object
+      properties:
+        chapter_id:
+          type: string
+        personalized_text:
+          type: string
+        recommendations:
+          type: array
+          items:
+            type: string
+
+    TranslatedContent:
+      type: object
+      properties:
+        chapter_id:
+          type: string
+        language_code:
+          type: string
+        translated_text:
+          type: string
+
+    IngestionRequest:
+      type: object
+      required:
+        - content_type
+        - content_data
+      properties:
+        content_type:
+          type: string
+          enum: ['chapter_markdown', 'glossary_term', 'figure_caption']
+        content_data:
+          type: string
+          description: Raw content to be ingested
+        metadata:
+          type: object
+          description: Additional metadata (e.g., chapter_id, section_id)

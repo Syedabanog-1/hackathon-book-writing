@@ -1,0 +1,23 @@
+{
+  "name": "myserver",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "@docusaurus/core": "^3.9.2",
+    "@docusaurus/preset-classic": "^3.9.2",
+    "@modelcontextprotocol/sdk": "^1.21.0",
+    "react": "^19.2.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "jest": "^30.2.0"
+  },
+  "scripts": {
+    "start": "cd docusaurus-app && npm start"
+  },
+  "description": "This project contains the source code for the Physical AI & Humanoid Robotics Textbook.",
+  "main": "index.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

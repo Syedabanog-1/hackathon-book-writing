@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physical AI & Humanoid Robotics Chatbot</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 25px 30px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+            font-weight: 400;
+        }
+
+        .chat-container {
+            height: 500px;
+            overflow-y: auto;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .chat-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-container::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .chat-container::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+        }
+
+        .message {
+            display: flex;
+            gap: 12px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .bot-avatar {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .user-avatar {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        .message-content {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px 18px;
+            border-radius: 15px;
+            max-width: 70%;
+            color: white;
+            line-height: 1.6;
+        }
+
+        .message.user .message-content {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .input-container {
+            padding: 25px 30px;
+            background: rgba(255, 255, 255, 0.15);
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            gap: 12px;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        #userInput {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 15px;
+            outline: none;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        #userInput::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        #userInput:focus {
+            border-color: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        #sendBtn {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(245, 87, 108, 0.3);
+        }
+
+        #sendBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(245, 87, 108, 0.4);
+        }
+
+        #sendBtn:active {
+            transform: translateY(0);
+        }
+
+        .suggested-questions {
+            padding: 20px 30px;
+            background: rgba(255, 255, 255, 0.08);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .suggested-questions h3 {
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            opacity: 0.9;
+        }
+
+        .questions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .question-chip {
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            color: white;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .question-chip:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .typing-indicator {
+            display: none;
+            gap: 5px;
+        }
+
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-10px);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 22px;
+            }
+
+            .chat-container {
+                height: 400px;
+                padding: 20px;
+            }
+
+            .message-content {
+                max-width: 85%;
+            }
+
+            .questions-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 Physical AI & Humanoid Robotics Assistant</h1>
+            <p>Ask me anything about Chapter 1 and Physical AI concepts!</p>
+        </div>
+
+        <div class="chat-container" id="chatContainer">
+            <div class="message bot">
+                <div class="avatar bot-avatar">🤖</div>
+                <div class="message-content">
+                    Hello! I'm your AI assistant for the Physical AI and Humanoid Robotics course. I can answer questions about Chapter 1, including topics like Physical AI fundamentals, humanoid robotics evolution, key technologies, real-world applications, and more. How can I help you today?
+                </div>
+            </div>
+        </div>
+
+        <div class="suggested-questions">
+            <h3>💡 Suggested Questions:</h3>
+            <div class="questions-grid">
+                <div class="question-chip" onclick="askQuestion('What is Physical AI?')">What is Physical AI?</div>
+                <div class="question-chip" onclick="askQuestion('What are humanoid robots?')">What are humanoid robots?</div>
+                <div class="question-chip" onclick="askQuestion('Tell me about sensors')">Tell me about sensors</div>
+                <div class="question-chip" onclick="askQuestion('What are the applications?')">What are the applications?</div>
+            </div>
+        </div>
+
+        <div class="input-container">
+            <div class="input-wrapper">
+                <input type="text" id="userInput" placeholder="Type your question here..." onkeypress="handleKeyPress(event)">
+            </div>
+            <button id="sendBtn" onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const knowledgeBase = {
+            "what is physical ai": {
+                answer: "Physical AI represents the convergence of artificial intelligence with physical embodiment—creating intelligent systems that can perceive, reason about, and act upon the physical world. Unlike traditional AI that exists purely in the digital realm, Physical AI bridges the gap between computation and physical interaction. It includes four core components: Perception (using sensors), Cognition (processing data), Action (using actuators), and Learning (improving through experience)."
+            },
+            "humanoid robot": {
+                answer: "Humanoid robots are machines designed to resemble and mimic human form and behavior. They represent the pinnacle of Physical AI development. The humanoid form is chosen because: 1) Our world is designed for human proportions, 2) Familiar form enhances human-robot collaboration, 3) Human-like bodies can perform diverse tasks, and 4) Humanoid appearance facilitates social acceptance. Examples include ASIMO, Atlas by Boston Dynamics, Tesla Optimus, and Figure 01."
+            },
+            "evolution": {
+                answer: "The evolution of humanoid robotics spans decades: 1960s-1970s saw early mechanical humanoids, 1980s-1990s introduced computer control (Honda's P-series), 2000s brought advanced bipedal robots like ASIMO, 2010s featured dynamic robots like Atlas, and 2020s have AI-powered humanoids with learning capabilities like Tesla Optimus and Figure 01."
+            },
+            "sensor": {
+                answer: "Humanoid robots use various sensors for perception: Vision Systems (RGB cameras, depth sensors for 3D perception), Tactile Sensors (force/torque sensors, pressure-sensitive skin), Inertial Measurement Units or IMUs (gyroscopes and accelerometers for balance), and Proprioceptive Sensors (joint encoders for position/velocity sensing). These sensors help robots understand and interact with their environment."
+            },
+            "actuator": {
+                answer: "Actuators enable robot movement. Key types include: Electric Motors (servo motors for precise joint control), Hydraulic Systems (high-power actuation for heavy-duty applications), Artificial Muscles (smart materials mimicking biological muscles), and Gearboxes/Transmissions (power transmission mechanisms). These work together to create smooth, controlled movements."
+            },
+            "application": {
+                answer: "Physical AI and humanoid robotics have diverse applications: Manufacturing (assembly, inspection, material handling), Healthcare (elderly care, rehabilitation, surgical assistance), Service & Hospitality (customer service, food service, cleaning), Disaster Response (search and rescue, hazardous exploration), Space Exploration (base construction, planetary exploration), and Home Assistance (domestic chores, companionship, education)."
+            },
+            "machine learning": {
+                answer: "Machine learning in robotics includes: Computer Vision (object detection, scene understanding), Natural Language Processing (understanding human speech), Reinforcement Learning (learning optimal behaviors through trial and error), and Motion Planning (generating collision-free paths). These AI technologies enable robots to learn and adapt to their environment."
+            },
+            "control system": {
+                answer: "Robot control systems operate at multiple levels: Low-level Control includes motor controllers, balance algorithms, and trajectory planning. High-level Planning handles task planning, decision making, and behavior coordination. Feedback Loops enable real-time adjustment based on sensory feedback. These systems work together to create smooth, intelligent robot behavior."
+            },
+            "challenge": {
+                answer: "Current challenges include Technical challenges (energy efficiency, dexterity, robustness, real-time processing) and Societal challenges (safety, ethics, regulation, social acceptance). However, future opportunities exist in advanced materials, edge AI, 5G/6G connectivity, and brain-computer interfaces."
+            },
+            "power": {
+                answer: "Power systems for humanoid robots include: High-capacity lithium batteries for extended operation, Power Management systems for efficient distribution, and Charging Infrastructure for autonomous docking and recharging. Energy efficiency remains one of the key challenges, as current batteries limit operational time."
+            },
+            "course objective": {
+                answer: "This course aims to help you: 1) Understand fundamental principles of Physical AI, 2) Analyze mechanical, electrical, and software components, 3) Design control algorithms for locomotion and manipulation, 4) Implement machine learning models, 5) Evaluate ethical considerations, and 6) Create prototype systems. You'll develop skills in robot kinematics, sensor fusion, motion planning, ROS programming, computer vision, and human-robot interaction."
+            },
+            "chapter 1": {
+                answer: "Chapter 1 covers: Introduction to Physical AI concepts, Evolution of humanoid robotics, Key technologies (sensors, actuators, control systems, AI, power systems), Real-world applications across industries, Course objectives and learning outcomes, Current challenges and future directions, and a comprehensive summary of the field."
+            }
+        };
+
+        function findBestMatch(query) {
+            const lowerQuery = query.toLowerCase();
+            
+            // Direct keyword matching
+            for (const [key, value] of Object.entries(knowledgeBase)) {
+                if (lowerQuery.includes(key)) {
+                    return value.answer;
+                }
+            }
+            
+            // No match found
+            return "I'm not sure about that specific question. I can help you with topics from Chapter 1 including: Physical AI fundamentals, humanoid robotics evolution, sensors and actuators, control systems, machine learning applications, real-world use cases, challenges, and course objectives. Could you rephrase your question or ask about one of these topics?";
+        }
+
+        function addMessage(text, isUser) {
+            const chatContainer = document.getElementById('chatContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
+            
+            const avatar = document.createElement('div');
+            avatar.className = `avatar ${isUser ? 'user-avatar' : 'bot-avatar'}`;
+            avatar.textContent = isUser ? '👤' : '🤖';
+            
+            const content = document.createElement('div');
+            content.className = 'message-content';
+            content.textContent = text;
+            
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(content);
+            chatContainer.appendChild(messageDiv);
+            
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('userInput');
+            const question = input.value.trim();
+            
+            if (question === '') return;
+            
+            addMessage(question, true);
+            input.value = '';
+            
+            // Simulate thinking delay
+            setTimeout(() => {
+                const answer = findBestMatch(question);
+                addMessage(answer, false);
+            }, 500);
+        }
+
+        function askQuestion(question) {
+            document.getElementById('userInput').value = question;
+            sendMessage();
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // Auto-focus input on load
+        window.onload = function() {
+            document.getElementById('userInput').focus();
+        };
+    </script>
+</body>
+</html>

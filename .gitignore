@@ -1,0 +1,18 @@
+# Gitignore
+node_modules/
+dist/
+build/
+*.log
+.env*
+.DS_Store
+Thumbs.db
+*.tmp
+*.swp
+.vscode/
+.idea/
+docusaurus-app/node_modules/
+docusaurus-app/build/
+docusaurus-app/.docusaurus/
+docusaurus-app/i18n/
+docusaurus-app/dist/
+package-lock.json
