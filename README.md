@@ -1,3 +1,8 @@
+
+
+https://github.com/user-attachments/assets/fd255762-344f-48d8-a8c3-61405ccf1d5b
+
+
 # Physical AI & Humanoid Robotics Textbook
 
 This project contains the source code for the Physical AI & Humanoid Robotics Textbook.
